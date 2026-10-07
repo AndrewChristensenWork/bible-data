@@ -380,7 +380,7 @@ def cmd_passage(spec, requested=None):
                 print("    %s\t%s" % (hit, bsb().get(hit, "")))
     if not any_quote:
         print("None.")
-    print("(Print each quoted verse whole. If it ends mid-sentence, add the next verse with: lookup.py verses \"...\")")
+    print("(Print exactly the one verse named. Do not add neighboring verses.)")
 
     for target in (refs if len(refs) <= 3 else [requested]):
         print("\n== CROSS-REFERENCE MENU for %s (entry number | source | heading | verses) ==" % target)
@@ -391,7 +391,14 @@ def cmd_passage(spec, requested=None):
     for row in b:
         if len(row) > 5 and row[5] not in seen and re.match(r"^[GH]\d", row[5]):
             seen.append(row[5])
-    totals = use_counts(seen, is_nt)
+    rend = renderings_for(seen, is_nt)
+    totals = {k: len(v) for k, v in rend.items()}
+    print("\n== HOW THE BEREAN RENDERS EACH WORD EVERYWHERE (grouped by main word, with counts; use this before rating or ruling out a meaning) ==")
+    for number in seen:
+        g = group_renderings(rend.get(number, []))
+        shown = " | ".join("%s %d" % (k, n) for k, n in g[:14])
+        more = "" if len(g) <= 14 else " | (%d more groups, %d uses)" % (len(g) - 14, sum(n for _, n in g[14:]))
+        print("%s (%d uses): %s%s" % (number, totals.get(number, 0), shown, more))
     print("\n== LEXICON (full entries; an entry over %d characters is cut and says so. 'uses' is the count in the Berean word tables; RARE means %d or fewer) ==" % (LEX_CAP, RARE))
     for number in seen:
         entries = lex_entries(number)
@@ -405,6 +412,46 @@ def cmd_passage(spec, requested=None):
             if len(body) > LEX_CAP:
                 body, cut = body[:LEX_CAP], "  [CUT: run 'lookup.py lex %s' for the rest]" % number
             print("%s (%s) | %s | %s | %s%s" % (e[0], tag, e[1], e[4] if len(e) > 4 else "", body, cut))
+
+
+SMALL = set("""a an the of to in on by for with from at as and or but that this these those it its is are was were be been being
+his her their our your my me him them us you we he she they i who whom whose which what not no do does did has have had will would shall
+should may might can could so then than into unto upon out up there here also all any some one own when while let if because how
+about over under before after through between among against toward""".split())
+
+
+def clean(eng):
+    return re.sub(r"[\[\]{}]", "", eng).strip().lower()
+
+
+def group_renderings(engs):
+    """Group Berean renderings by their main word. Returns [(label, count)] largest first."""
+    freq = Counter()
+    toks = []
+    for e in engs:
+        w = [x for x in re.findall(r"[a-z’']+", e) if x not in SMALL]
+        toks.append(w)
+        freq.update(set(w))
+    groups = Counter()
+    for e, w in zip(engs, toks):
+        if re.fullmatch(r"[-. v]*", e):
+            groups["(left without English)"] += 1
+        elif not w:
+            groups[e] += 1
+        else:
+            groups[max(w, key=lambda x: (freq[x], -len(x)))] += 1
+    return groups.most_common()
+
+
+def renderings_for(numbers, is_nt):
+    want = set(numbers)
+    out = {}
+    for name in (["words-nt.txt"] if is_nt else OT_WORDS):
+        for line in lines(name):
+            p = line.split("\t")
+            if len(p) > 6 and p[5] in want:
+                out.setdefault(p[5], []).append(clean(p[6]))
+    return out
 
 
 LEX_CAP = 5000
@@ -474,6 +521,10 @@ def cmd_uses(number, home=None, start=1):
     print("\nBerean renderings (count):")
     for eng, n in Counter(e.lower() for p in hits for e in [re.sub(r"[\[\]{}]", "", p[6]).strip()]).most_common():
         print("  %d  %s" % (n, eng or "(untranslated)"))
+    g = group_renderings([clean(p[6]) for p in hits])
+    print("\nGrouped by main word (copy these numbers; they total %d):" % sum(n for _, n in g))
+    for k, n in g:
+        print("  %d  %s" % (n, k))
     keys = list(verses.keys())
     if home:
         book = split_ref(expand(home)[0])[0]
