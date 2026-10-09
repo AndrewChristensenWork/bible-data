@@ -41,6 +41,7 @@ cross-references, and Berean notes are leads, never evidence.
 import os
 import re
 import sys
+import time
 import urllib.request
 from collections import Counter, OrderedDict
 
@@ -280,7 +281,23 @@ def cmd_verses(spec):
         print("%s\t%s" % (ref, bsb()[ref]))
 
 
+def stamp_path():
+    return os.path.join(DIR, "started.txt")
+
+
+def elapsed():
+    """Seconds since the passage step began, or None if it was not timed."""
+    try:
+        with open(stamp_path()) as fh:
+            return int(time.time() - float(fh.read().strip()))
+    except Exception:
+        return None
+
+
 def cmd_passage(spec, requested=None):
+    os.makedirs(DIR, exist_ok=True)
+    with open(stamp_path(), "w") as fh:
+        fh.write(str(time.time()))
     refs = expand(spec)
     requested = requested or refs[0]
     is_nt = BOOKS.index(split_ref(refs[0])[0]) >= 39
@@ -602,7 +619,10 @@ def expected_tag(lang, form):
     return None
 
 
-def cmd_check(spec, path):
+AUDIT_PART = 9000
+
+
+def cmd_check(spec, path, part=1):
     """Test a draft's word lines against the word table. Each draft line starts with the ids of the
     original words it carries, in braces: {w6} 3. **bore** — ...   An added word has {}.
     A hidden word is a line such as: {w10} HIDDEN: quote marker"""
@@ -681,7 +701,7 @@ def cmd_check(spec, path):
             base = re.sub(r"[†*<>]", "", re.sub(r"^the\s+", "", word, flags=re.I)).strip().lower()
             if base not in opts and re.sub(r"[†*<>]", "", word).strip().lower() not in opts:
                 faults.append("Line %d: the bold word '%s' does not appear in its own tier." % (num, word))
-            if "STRONG:" in live and "LIKELY:" in live:
+            if "STRONG:" in live and re.search(r"(?<![A-Z])LIKELY:", live):
                 faults.append("Line %d has both STRONG and LIKELY. When one option is STRONG, none can be LIKELY." % num)
         for i in ids:
             if 1 <= i <= n and rows[i - 1][4].startswith("V-"):
@@ -703,15 +723,17 @@ def cmd_check(spec, path):
         for f in faults:
             print("- " + f)
     else:
-        print("CHECK PASSED: all %d original words are accounted for on %d lines." % (n, len(nums)))
-        print("\n== NOW AUDIT THE OPTIONS. This is the second half of the check. Do it before answering. ==")
-        print("For each line below, compare YOUR LINE with the LEXICON entry and the BEREAN renderings.")
-        print("1. Every distinct meaning in the lexicon entry must be in a tier or under RULED OUT. Add any that are missing.")
-        print("2. Every option you list must come from the lexicon entry or the Berean renderings. Remove any that came from memory.")
-        print("3. RULED OUT needs a tested reason: the data shows the meaning never occurs in a setting like this, or the lexicon itself")
-        print("   says the meaning needs a form this verse lacks. With no tested reason, move it to UNLIKELY.")
-        print("4. Every option before RULED OUT must be able to replace the bold word and still make a sentence.")
-        print("5. A rating that rests only on the order of the lexicon entry becomes POSSIBLE.")
+        out = []
+        _p = out.append
+        head = "CHECK PASSED: all %d original words are accounted for on %d lines." % (n, len(nums))
+        _p("\n== NOW AUDIT THE OPTIONS. This is the second half of the check. Do it before answering. ==")
+        _p("For each line below, compare YOUR LINE with the LEXICON entry and the BEREAN renderings.")
+        _p("1. Every distinct meaning in the lexicon entry must be in a tier or under RULED OUT. Add any that are missing.")
+        _p("2. Every option you list must come from the lexicon entry or the Berean renderings. Remove any that came from memory.")
+        _p("3. RULED OUT needs a tested reason: the data shows the meaning never occurs in a setting like this, or the lexicon itself")
+        _p("   says the meaning needs a form this verse lacks. With no tested reason, move it to UNLIKELY.")
+        _p("4. Every option before RULED OUT must be able to replace the bold word and still make a sentence.")
+        _p("5. A rating that rests only on the order of the lexicon entry becomes POSSIBLE.")
         is_nt = BOOKS.index(split_ref(refs[0])[0]) >= 39
         numbers = []
         for r in rows:
@@ -730,20 +752,43 @@ def cmd_check(spec, path):
                 if not re.match(r"^[GH]\d", number) or number in ("G3588",) or number in done:
                     continue
                 done.add(number)
-                print("\nYOUR LINE: %s" % text)
+                _p("\nYOUR LINE: %s" % text)
                 g = group_renderings(rend.get(number, []))
-                print("BEREAN (%d uses): %s" % (len(rend.get(number, [])), " | ".join("%s %d" % (k, c) for k, c in g[:14])))
+                _p("BEREAN (%d uses): %s" % (len(rend.get(number, [])), " | ".join("%s %d" % (k, c) for k, c in g[:14])))
                 entries = lex_entries(number)
                 if not entries:
-                    print("LEXICON: no entry (often a name). Offer no options beyond the second table's meaning.")
+                    _p("LEXICON: no entry (often a name). Offer no options beyond the second table's meaning.")
                 seen_body = set()
                 for e in entries:
                     body = slim(e[5] if len(e) > 5 else "")
                     if body and body not in seen_body:
                         seen_body.add(body)
-                        print("LEXICON: %s" % body[:LEX_CAP])
-        print("\nWhen the audit is done and the lines are fixed, print the answer. Make its last line exactly:")
-        print("Checked: %d words on %d lines." % (n, len(nums)))
+                        _p("LEXICON: %s" % body[:LEX_CAP])
+        # page the audit so the tool never cuts the middle out of it
+        parts, cur, size = [], [], 0
+        for chunk in "\n".join(out).split("\n\nYOUR LINE: "):
+            piece = chunk if not parts and not cur else "YOUR LINE: " + chunk
+            if cur and size + len(piece) > AUDIT_PART:
+                parts.append("\n\n".join(cur))
+                cur, size = [], 0
+            cur.append(piece)
+            size += len(piece)
+        if cur:
+            parts.append("\n\n".join(cur))
+        part = max(1, min(int(part), len(parts)))
+        print(head)
+        print("AUDIT PART %d of %d." % (part, len(parts)))
+        print(parts[part - 1])
+        if part < len(parts):
+            print("\nMORE REMAINS. You have not finished the audit. Run: lookup.py check \"%s\" %s %d" % (spec, path, part + 1))
+        else:
+            print("\nThat is the whole audit. When the lines are fixed, print the answer. Make its last line exactly:")
+            secs = elapsed()
+            took = "" if secs is None else " %d seconds from the first data step to the end of the check." % secs
+            print("Checked: %d words on %d lines.%s" % (n, len(nums), took))
+
+
+
 
 
 def cmd_lex(numbers, classical=False):
@@ -814,7 +859,7 @@ def main(argv):
     elif cmd == "check":
         if len(argv) < 4:
             raise SystemExit('Use: lookup.py check "1 Peter 2:24" draft.txt')
-        cmd_check(argv[2], argv[3])
+        cmd_check(argv[2], argv[3], argv[4] if len(argv) > 4 else 1)
     elif cmd == "lex":
         cmd_lex(argv[2], len(argv) > 3 and argv[3] == "classical")
     elif cmd == "xref":

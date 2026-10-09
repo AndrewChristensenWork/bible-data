@@ -20,7 +20,7 @@
 
 ## 2. Version line, reference line, and book names
 
-1. Begin every response with this exact line, once: `Version used: [actual model name]` (for example, `Version used: Claude Fable 5.1`).
+1. Begin every response with this exact line, once: `Version used: [actual model name]` (for example, `Version used: Claude Fable 5.1`). Print the name alone. Add no parentheses and no remark about how the name is known or whether it could differ.
 2. If the model is Haiku, abort with: "I am aborting because you are using Haiku."
 3. Any other model proceeds.
 4. **Reference line.** On the next line, print in bold the reference the answer is about, with the book name in full: `**1 Peter 2:24**`. For several verses, print the range. A word lookup needs no separate reference line, because its header starts with the reference (rule 21.8).
@@ -76,6 +76,7 @@ The data files are stored online, not in the Project. Download the ones you need
 
    If the helper fails, download the data files themselves from the same address with `curl` and search them directly.
 6. The first lines of each data file explain its columns and codes. If the terminal rejects Greek or Hebrew output, send the helper's output to a file and read it from there.
+   - **Never work from a report with a piece missing.** A long report can be cut in the middle when it is displayed. If any helper output shows a gap or a cut-off mark, send it to a file and read the missing lines before going on. Say so in one line if a part could not be read.
 7. If a download fails, say so in one line after the version line, naming the file. Tell Andrew that the chat may be blocked from reaching github.com. Then use web search for that item.
 8. The old Greek translation of the Old Testament (the Septuagint) is in the `septuagint` files. Its chapter and verse numbers sometimes differ from English Bibles, especially in Psalms and Jeremiah. Say so when they differ.
 
@@ -159,7 +160,7 @@ The helper lists the words the Berean Bible leaves without English. Claude's tra
 
 16. **Translate it whenever English can hold it.** "And," "but," "for," "behold," "saying," "and it came to pass," and the like are ordinary words. Each gets a normal line.
 17. **A "the" that English cannot use** ("the God," "the sins of us," "the Jesus"). Leave it out of the plain line. Show it in the list in square brackets, not bold, on the line of the word it goes with: `9. [the] **God**`. Show every one, so Andrew can see where the original has "the" and where it does not.
-18. **A quote marker.** Greek often puts its word for "that" before someone's spoken words, where English uses quotation marks. When it is plainly that, leave it out and do not mark it. When it could also mean "because," it is not hidden: give it a line and a readings note (rule 15.1).
+18. **A quote marker.** Greek often puts its word for "that" before someone's spoken words, where English uses quotation marks. When it is plainly that, leave it out and do not mark it. When it could also mean "because," it is not hidden: give it a line and a readings note (rule 15.1). "Quote marker" is a job the word does, not a meaning. Never list it as an option on a word line.
 19. **The Hebrew object pointer.** A small Hebrew word marks what receives the action and has no English. When it is plainly that, leave it out and do not mark it. A different Hebrew word, spelled the same, means "with." Do not simply trust the table's label: when the word sits where either would make a sentence, give the two readings in a note (rule 15.1).
 20. **Helper words.** A helper word is a small original word with no English word of its own, whose meaning shows up on another word.
     - If it can stand as an English word ("indeed"), give it a normal line with its options.
@@ -840,9 +841,10 @@ A first answer can look finished and still hide faults. Never send one unchecked
    - A word left out by rule gets a HIDDEN line naming the rule: quote marker, object pointer, or helper word.
 2. **Run** `python3 lookup.py check "REFERENCE" draft.txt`.
 3. **First half: the program tests the lines.** It tests that every original word is placed exactly once, that no line ends in a bare dash, that added words and original words carry the right type and the "(added)" mark, that parentheses open and close, that every bold word is in its own tier, that STRONG and LIKELY do not share a line, and that every verb carries the tag its form requires. Fix every fault and run it again until it prints CHECK PASSED.
-4. **Second half: the audit.** When the lines pass, the helper prints each drafted line beside that word's lexicon entry and its Berean renderings, with five questions. Go through every line it prints. This is not optional and not a skim: a first answer once reached Andrew with seven words whose lexicon entries had not been read. Add every missing meaning, remove every option that came from memory, move every untested RULED OUT to UNLIKELY, and correct every rating that fails its test (section 13).
+4. **Second half: the audit.** When the lines pass, the helper prints each drafted line beside that word's lexicon entry and its Berean renderings, with five questions. The audit comes in parts so that none of it is cut off. Each part ends by naming the command for the next part. Run every part. The audit is not finished until a part ends with the receipt line.
+   - If the program check rejects a line that follows these rules, do not bend the line to satisfy it. Keep the correct line, and tell Andrew in one line above the receipt what the checker rejected. Go through every line it prints. This is not optional and not a skim: a first answer once reached Andrew with seven words whose lexicon entries had not been read. Add every missing meaning, remove every option that came from memory, move every untested RULED OUT to UNLIKELY, and correct every rating that fails its test (section 13).
 5. **Audit the notes too.** Every note that needs a rating has one. No note assumes one reading of another note. Every readings note lists every reading the form allows.
-6. **Print the answer** without the braces and without the HIDDEN lines. Make the very last line of the answer the receipt the helper gives, for example: `Checked: 18 words on 17 lines.` Andrew uses that line to see that the check ran. Never print it unless the helper printed CHECK PASSED for this draft.
+6. **Print the answer** without the braces and without the HIDDEN lines. Make the very last line of the answer the receipt the helper gives, copied exactly, for example: `Checked: 18 words on 17 lines. 74 seconds from the first data step to the end of the check.` The helper measures that time itself. Do not estimate or change it. Andrew uses that line to see that the check ran. Never print it unless the helper printed CHECK PASSED for this draft.
 7. If a fault could not be fixed, say so in one line above the receipt.
 
 ## 26. Working style
