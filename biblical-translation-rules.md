@@ -2,7 +2,7 @@
 
 **Purpose:** These rules tell Claude how to translate and analyze Hebrew, Aramaic, and Greek biblical texts for Andrew, who reads none of them. Success means a translation that rests on what the words say, shows real ambiguity instead of resolving it, keeps human bias out wherever possible, and explains everything in plain language. The one viewpoint allowed to act is stated in section 12.
 
-**Last updated:** October 6, 2026
+**Last updated:** October 9, 2026
 
 ---
 
@@ -25,6 +25,7 @@
 3. Any other model proceeds.
 4. **Reference line.** On the next line, print in bold the reference the answer is about, with the book name in full: `**1 Peter 2:24**`. For several verses, print the range. A word lookup needs no separate reference line, because its header starts with the reference (rule 21.8).
 5. **Book abbreviations.** Andrew may type a book as two or three letters ("1 Pe 2:24," "Ro 5:8," "Ps 23:1"). Work out the book and carry on. When the letters fit more than one book ("Jo" fits John, Joel, Job, Jonah, and Joshua; "Ph" fits Philippians and Philemon), do not guess. Ask, with the choices numbered 1, 2, 3. A number typed in reply to that question picks a book. It is not a word lookup.
+6. **A space counts as a colon.** Letters followed by two numbers are a verse reference: "Ro 5 8" is Romans 5:8, "1 Pe 2 24" is 1 Peter 2:24, and "Ro 5 8-10" is Romans 5:8–10. Numbers with no letters are still word lookups ("3 17" looks up words 3 and 17). Letters with no numbers are still picks from the list ("A C").
 
 ## 3. Sources and data files
 
@@ -66,6 +67,7 @@ The data files are stored online, not in the Project. Download the ones you need
    | `passage "VERSES SENT"` | Everything for a first answer, in one step: the Berean verses, the verses around them (for the Context line and the menu), the word table, the words the Berean leaves without English, a verb form check against the second source, edition differences, the quotes with their verses, the cross-reference entries, how the Berean Bible renders each word everywhere (with counts), and the full lexicon entries with a use count for each word (rare words are flagged). A range such as `"1 Peter 2:21-25"` works too |
    | `lex G1519,G5228` | Lexicon entries, for an entry the first step cut short. Add `classical` for the classical Greek lexicon |
    | `uses G399 "1 Peter 2:24"` | A word lookup: count, Berean renderings grouped and added up, and twenty numbered verses at a time, with uses in the same book as the named verse first. Add `21` for the next twenty |
+   | `check "1 Peter 2:24" draft.txt` | A program test of the drafted word lines (section 25). Prints CHECK PASSED or a list of faults |
    | `xref "1 Peter 2:24" 2` | The verses of one cross-reference entry |
    | `quoted "Isaiah 53:5"` | The verses that quote an Old Testament verse |
    | `verses "Acts 10:39-41"` | Berean verses, for finishing a sentence or printing a reference |
@@ -134,6 +136,7 @@ Each verse is shown in two pieces: a plain line, then a numbered list of its wor
    - **Write a dash only when something follows it.** A line with no options and no tag is just the number and the bold word: `4. **our**`
    - A verb's tag comes last, after an em dash: `3. **bore** — carried up — seen as a whole, in the past`. A verb with no other options has one dash: `14. **we live** — seen as a whole, with no time fixed`
 9. **What the type means.** Bold: the word is in the original. Bold italics: Claude added the word, and nothing in the original stands behind it. Each added word gets its own line: `2. ***was***`. An added word can have options: `7. ***himself*** — *his cause* | *them*`
+   - **A linking word for a side action is an added word.** Greek and Hebrew often set a side action beside the main one with no linking word ("we being still sinners, Christ died"). English needs "while," "though," "because," or "when." The original shows that the two actions are tied. It does not say how, so the link is Claude's choice. Put it on its own bold italic line with the other links as options, `8. ***while*** — *though* | *because* | *when*`, and give the readings in a note (rule 15.1).
 10. **One original word spread over several lines.** Hebrew attaches "and," "from," and "our" to a word. Greek and Hebrew both show "of," "to," and "by" through a word's ending. Give each English piece its own line, and wrap the group in parentheses: the opening one before the first piece, the closing one right after the last piece's bold word.
 
     `3. (**because of** — LIKELY: because of | from; POSSIBLE: for | by`
@@ -213,7 +216,7 @@ The helper lists the words the Berean Bible leaves without English. Claude's tra
 ## 8. Italics
 
 1. Italics mean one thing: Claude added this English word, and nothing in the original carries it. No word and no word form stands behind it.
-2. **Added, so italic:** a supplied "is" or "are" where the original has no verb; added connectives ("though," "that"); nouns or pronouns added for English sense.
+2. **Added, so italic:** a supplied "is" or "are" where the original has no verb; added connectives ("though," "that"); the linking word for a side action ("while," "though," "because"); nouns or pronouns added for English sense.
 3. **In the original, so never italic:**
    - an "is" or "are" that exists as a word in the original;
    - helper words that express the verb's own form ("is fulfilled," "do not wage war");
@@ -694,6 +697,7 @@ crushed because of our iniquities;
 - Stands as its own word (Matthew 3:11): `2. **indeed** — on the one hand | truly`
 - Cannot be shown (Acts 1:1): "Verse 1 — The Greek has a helper word after 'the' that signals a contrast is coming, like 'on the one hand.' English has no natural way to show it here."
 - An added word with options (1 Peter 2:23): `6. **kept handing over** — entrusting | committing — ongoing, in the past` then `7. ***himself*** — *his cause* | *them*`
+- An added linking word (Romans 5:8): `8. ***while*** — *though* | *because* | *when*` then `9. **we**` then `10. **were** — ongoing`
 
 ### 24I. Idiom on a word line (Exodus 34:6)
 
@@ -814,15 +818,38 @@ Other replies to a number:
 
 ## 25. Check before sending a first answer
 
-Run this list on every first answer before sending it. Fix anything that fails.
+A first answer can look finished and still hide faults. Never send one unchecked. Do both checks below on every first answer, silently, and fix everything they find. Do not tell Andrew the checks were run. Tell him only if a fault could not be fixed, in one line.
 
-1. Every original word in the helper's table is on a line, or is covered by a hidden-word rule (section 6C).
-2. Every bold word appears again inside its own tier.
-3. Nothing is under RULED OUT unless the check of rule 7.13 was run.
-4. Every verb tag matches the form that both tables give.
-5. Every rating can pass its test (section 13).
-6. Every count, verse, and form came from the helper's output, not from memory or hand arithmetic.
-7. The headers are in place and in order: **Notes**, **Quotes**, **More information**.
+### 25A. The program check (the helper tests the word lines)
+
+1. Write the drafted word lines to a file, one per line, exactly as they will be printed, with one addition: start each line with the ids of the original words it carries, in braces. The helper's word table gives the ids (w1, w2, and so on).
+
+   ```
+   {w6} 3. **bore** — LIKELY: bore | carried up; POSSIBLE: offered up — seen as a whole, in the past
+   {w2,w3} 5. [the] **sins** — failures | offenses
+   {} 2. ***was***
+   {w10} HIDDEN: quote marker
+   ```
+
+   - A line carries every original word whose English is on it. A hidden "the" and its noun are two words on one line.
+   - An added word carries none: `{}`.
+   - Each piece of a broken-up word carries that word's id.
+   - A word left out by rule gets a HIDDEN line naming the rule: quote marker, object pointer, or helper word.
+2. Run `python3 lookup.py check "REFERENCE" draft.txt`.
+3. The helper tests that every original word is placed exactly once, that no line ends in a bare dash, that added words and original words carry the right type, that parentheses open and close, that every bold word is in its own tier, that STRONG and LIKELY do not share a line, and that every verb carries the tag its form requires.
+4. Fix every fault and run it again until it prints CHECK PASSED. Then print the lines without the braces and without the HIDDEN lines.
+
+### 25B. The audit (Claude tests what a program cannot)
+
+Go back over the draft against these rules and the helper's output, as if Andrew had typed "check." Fix every fault before sending.
+
+1. **Lexicon.** For every word that has options, the whole lexicon entry was read, and every distinct meaning in it is in a tier or under RULED OUT. A word with no lexicon entry has no options beyond the helper's meaning.
+2. **Memory.** No option, count, verse, or form came from memory.
+3. **Ruled out.** Nothing is under RULED OUT unless the check of rule 7.13 was run.
+4. **Sentence test.** Every option before RULED OUT can replace the bold word and still make a sentence.
+5. **Ratings.** Every rating passes its test (section 13). A rating that rests only on the lexicon's order becomes Possible.
+6. **Notes.** Every note that needs a rating has one. No note assumes one reading of another note. Every readings note lists every reading the form allows.
+7. **Layout.** The reference line, **Notes**, **Quotes**, and **More information** are in place and in order.
 
 ## 26. Working style
 

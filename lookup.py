@@ -19,6 +19,13 @@ Commands:
       up to 20 verses from position [start] with the linked English.
       Give the verse being studied so uses in the same book come first.
       The numbering is fixed, so "3.5" always means the same verse.
+  python3 lookup.py check "1 Peter 2:24" draft.txt
+      Test a draft's word lines before answering. Each line of the draft
+      starts with the ids of the original words it carries, in braces:
+        {w6} 3. **bore** — carried up — seen as a whole, in the past
+        {} 2. ***was***                    (an added word carries none)
+        {w10} HIDDEN: quote marker         (a word left out by rule)
+      Prints CHECK PASSED or the list of faults.
   python3 lookup.py verses "Isaiah 53:5; Acts 10:39-41"
   python3 lookup.py lex G1519,G5228      (brief lexicon, full entries)
   python3 lookup.py lex G3468 classical  (classical Greek lexicon)
@@ -292,9 +299,10 @@ def cmd_passage(spec, requested=None):
         print("after   %s\t%s" % (k, bsb()[k]))
 
     b = berean_rows(refs)
-    print("\n== WORDS: BEREAN TABLE (reference | lang | word | sound | form | number | Berean English | edition marks | note) ==")
-    for row in b:
-        print(" | ".join(row))
+    print("\n== WORDS: BEREAN TABLE (word id | reference | lang | word | sound | form | number | Berean English | edition marks | note) ==")
+    for i, row in enumerate(b, 1):
+        print("w%d | %s" % (i, " | ".join(row)))
+    print("(%d original words, w1 to w%d. Every one must be placed on a word line or listed as hidden. Run 'lookup.py check' on the draft before answering.)" % (len(b), len(b)))
 
     print("(Each row is ONE original word. When its English is shown as several lines, those lines are pieces of one word.)")
 
@@ -399,15 +407,19 @@ def cmd_passage(spec, requested=None):
         shown = " | ".join("%s %d" % (k, n) for k, n in g[:14])
         more = "" if len(g) <= 14 else " | (%d more groups, %d uses)" % (len(g) - 14, sum(n for _, n in g[14:]))
         print("%s (%d uses): %s%s" % (number, totals.get(number, 0), shown, more))
-    print("\n== LEXICON (full entries; an entry over %d characters is cut and says so. 'uses' is the count in the Berean word tables; RARE means %d or fewer) ==" % (LEX_CAP, RARE))
+    print("\n== LEXICON (every meaning of each word; verse citations are removed to keep it short; read each entry whole. An entry over %d characters is cut and says so. 'uses' is the count in the Berean word tables; RARE means %d or fewer) ==" % (LEX_CAP, RARE))
     for number in seen:
         entries = lex_entries(number)
         n = totals.get(number, 0)
         tag = "uses %d%s" % (n, " RARE: consult 'lookup.py lex %s classical'" % number if n <= RARE and number.startswith("G") else (" RARE" if n <= RARE else ""))
         if not entries:
-            print("%s (%s): no entry found" % (number, tag))
+            print("%s (%s): no lexicon entry (often a name). Second table's meaning: %s. Offer no options beyond this." % (number, tag, tyndale_gloss(number, is_nt) or "none found"))
+        shown = set()
         for e in entries:
-            body = e[5] if len(e) > 5 else ""
+            body = slim(e[5] if len(e) > 5 else "")
+            if body in shown:
+                continue
+            shown.add(body)
             cut = ""
             if len(body) > LEX_CAP:
                 body, cut = body[:LEX_CAP], "  [CUT: run 'lookup.py lex %s' for the rest]" % number
@@ -452,6 +464,32 @@ def renderings_for(numbers, is_nt):
             if len(p) > 6 and p[5] in want:
                 out.setdefault(p[5], []).append(clean(p[6]))
     return out
+
+
+BK = r"(?:[1-3]?[A-Z][a-z]{1,3})"
+REF = re.compile(r"(?:\b%s\.\s?\d+[:.]\d+(?:[-–]\d+)?(?:\s*,\s*(?:\d+[:.])?\d+(?![A-Za-z])(?:[-–]\d+)?)*)(?:\s*,\s*)?" % BK)
+
+
+def slim(body):
+    """Drop verse citations from a lexicon entry so the list of meanings is short enough to read whole."""
+    body = REF.sub("", body)
+    body = re.sub(r"\b(al\.|ll\. with|cf\.)\s*;?", "", body)
+    body = re.sub(r"\s+([;:,.])", r"\1", body)
+    body = re.sub(r"[:;,]\s*(?=[;/])", "", body)
+    body = re.sub(r"(,\s*){2,}", ", ", body)
+    return re.sub(r"\s{2,}", " ", body).strip()
+
+
+def tyndale_gloss(number, is_nt):
+    """Fallback meaning for a word the lexicon file lacks (mostly names): the gloss in the second word table."""
+    if not is_nt:
+        return ""
+    key = lex_key(number)
+    for line in lines("tyndale-nt.txt"):
+        p = line.split("\t")
+        if len(p) > 4 and re.match(r"^%s[A-Za-z]?=" % key, p[3]):
+            return p[4]
+    return ""
 
 
 LEX_CAP = 5000
@@ -539,6 +577,131 @@ def cmd_uses(number, home=None, start=1):
         print("More: lookup.py uses %s %s%d" % (num, ('"%s" ' % home) if home else "", start + 20))
 
 
+GREEK_TAG = {"AI": "seen as a whole, in the past", "R": "a completed act that still has effect",
+             "I": "ongoing, in the past", "P": "ongoing"}
+HIDDEN_OK = ("quote marker", "object pointer", "helper word")
+TIERS = ("STRONG:", "LIKELY:", "POSSIBLE:", "UNLIKELY:", "RULED OUT:")
+
+
+def expected_tag(lang, form):
+    """The verb tag the rules require for this form, or None when no single tag is fixed."""
+    if lang == "G":
+        m = re.match(r"^V-(\d?)([A-Z])([A-Z])", form)
+        if not m:
+            return None
+        tense, mood = m.group(2), m.group(3)
+        if tense == "A":
+            return GREEK_TAG["AI"] if mood == "I" else "seen as a whole, with no time fixed"
+        return GREEK_TAG.get(tense)
+    if "Prtcpl" in form:
+        return "a state, with no time fixed"
+    if "ConsecImperf" in form or "Perf" in form and "Imperf" not in form:
+        return "a completed act"
+    if "Imperf" in form:
+        return "an act not yet complete"
+    return None
+
+
+def cmd_check(spec, path):
+    """Test a draft's word lines against the word table. Each draft line starts with the ids of the
+    original words it carries, in braces: {w6} 3. **bore** — ...   An added word has {}.
+    A hidden word is a line such as: {w10} HIDDEN: quote marker"""
+    refs = expand(spec)
+    rows = berean_rows(refs)
+    n = len(rows)
+    faults = []
+    placed = {}
+    hidden = {}
+    nums = []
+    depth_ids = None
+    with open(path, encoding="utf-8") as fh:
+        draft = [l.rstrip("\n") for l in fh if l.strip()]
+    for line in draft:
+        m = re.match(r"^\{([w\d,\s]*)\}\s*(.*)$", line)
+        if not m:
+            faults.append("No {word ids} at the start of: %s" % line[:60])
+            continue
+        ids = [int(x) for x in re.findall(r"w(\d+)", m.group(1))]
+        body = m.group(2)
+        for i in ids:
+            if i < 1 or i > n:
+                faults.append("w%d does not exist (the verse has w1 to w%d): %s" % (i, n, body[:50]))
+        hm = re.match(r"^HIDDEN:\s*(.+)$", body)
+        if hm:
+            if not any(k in hm.group(1).lower() for k in HIDDEN_OK):
+                faults.append("A word may be hidden only as a quote marker, an object pointer, or a helper word with a note: %s" % body)
+            for i in ids:
+                hidden.setdefault(i, []).append(body)
+            continue
+        lm = re.match(r"^(\d+)\.\s+(.*)$", body)
+        if not lm:
+            faults.append("Not a numbered word line: %s" % body[:60])
+            continue
+        num, text = int(lm.group(1)), lm.group(2)
+        nums.append(num)
+        for i in ids:
+            placed.setdefault(i, []).append(num)
+        if re.search(r"—\s*$", text):
+            faults.append("Line %d ends with a dash and nothing after it." % num)
+        bm = re.search(r"\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*", text)
+        if not bm:
+            faults.append("Line %d has no bold word." % num)
+            continue
+        added = bm.group(1) is not None
+        word = (bm.group(1) or bm.group(2)).strip()
+        if added and ids:
+            faults.append("Line %d is bold italic (added) but carries original word(s) %s." % (num, ", ".join("w%d" % i for i in ids)))
+        if not added and not ids:
+            faults.append("Line %d is bold (in the original) but carries no original word. If Claude added it, use bold italics." % num)
+        opens, closes = text.startswith("("), bool(re.search(r"\*\*\)", text))
+        if opens:
+            if depth_ids is not None:
+                faults.append("Line %d opens a parenthesis before the last one closed." % num)
+            depth_ids = set(ids)
+        if depth_ids is not None and not added and not (set(ids) & depth_ids):
+            faults.append("Line %d is inside parentheses but carries a different original word than the line that opened them." % num)
+        if closes:
+            if depth_ids is None:
+                faults.append("Line %d closes a parenthesis that was never opened." % num)
+            depth_ids = None
+        arts = [i for i in ids if 1 <= i <= n and len(rows[i - 1]) > 5 and rows[i - 1][5] in ("G3588",) and len(ids) > 1]
+        if arts and "[the]" not in text and not re.search(r"\bthe\b", word, re.I):
+            faults.append("Line %d carries a Greek 'the' (w%d) but shows neither 'the' nor [the]." % (num, arts[0]))
+        if "[the]" in text and not any(1 <= i <= n and rows[i - 1][5] == "G3588" for i in ids):
+            faults.append("Line %d shows [the] but carries no Greek 'the'." % num)
+        rest = text[bm.end():]
+        if any(t in rest for t in TIERS):
+            live = rest.split("RULED OUT:")[0]
+            opts = [o.strip(" †*").lower() for seg in re.split(r"(?:STRONG|LIKELY|POSSIBLE|UNLIKELY):", live)
+                    for o in re.split(r"[|;]", seg.split(" — ")[0])]
+            base = re.sub(r"[†*<>]", "", re.sub(r"^the\s+", "", word, flags=re.I)).strip().lower()
+            if base not in opts and re.sub(r"[†*<>]", "", word).strip().lower() not in opts:
+                faults.append("Line %d: the bold word '%s' does not appear in its own tier." % (num, word))
+            if "STRONG:" in live and "LIKELY:" in live:
+                faults.append("Line %d has both STRONG and LIKELY. When one option is STRONG, none can be LIKELY." % num)
+        for i in ids:
+            if 1 <= i <= n and rows[i - 1][4].startswith("V-"):
+                want = expected_tag(rows[i - 1][1], rows[i - 1][4])
+                if want and want not in text:
+                    faults.append("Line %d: the verb (w%d, %s) needs the tag '%s'." % (num, i, rows[i - 1][4], want))
+    if depth_ids is not None:
+        faults.append("A parenthesis was opened and never closed.")
+    for i in range(1, n + 1):
+        if i not in placed and i not in hidden:
+            r = rows[i - 1]
+            faults.append("w%d is missing: %s (%s), Berean English '%s'. Give it a line or list it as hidden." % (i, r[3], r[5], r[6]))
+        if i in placed and i in hidden:
+            faults.append("w%d is both on a line and listed as hidden." % i)
+    if nums and nums != list(range(nums[0], nums[0] + len(nums))):
+        faults.append("The line numbers do not run in order without gaps: %s" % nums)
+    if faults:
+        print("CHECK FAILED: %d fault(s). Fix each one and run the check again." % len(faults))
+        for f in faults:
+            print("- " + f)
+    else:
+        print("CHECK PASSED: all %d original words are accounted for on %d lines." % (n, len(nums)))
+
+
 def cmd_lex(numbers, classical=False):
     for number in re.split(r"[,\s]+", numbers.strip()):
         if not number:
@@ -604,6 +767,10 @@ def main(argv):
         home = next((x for x in rest if not x.isdigit()), None)
         start = next((x for x in rest if x.isdigit()), 1)
         cmd_uses(argv[2], home, start)
+    elif cmd == "check":
+        if len(argv) < 4:
+            raise SystemExit('Use: lookup.py check "1 Peter 2:24" draft.txt')
+        cmd_check(argv[2], argv[3])
     elif cmd == "lex":
         cmd_lex(argv[2], len(argv) > 3 and argv[3] == "classical")
     elif cmd == "xref":
