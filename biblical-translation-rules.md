@@ -135,8 +135,8 @@ Each verse is shown in two pieces: a plain line, then a numbered list of its wor
    - The English used in the plain line is in bold.
    - **Write a dash only when something follows it.** A line with no options and no tag is just the number and the bold word: `4. **our**`
    - A verb's tag comes last, after an em dash: `3. **bore** — carried up — seen as a whole, in the past`. A verb with no other options has one dash: `14. **we live** — seen as a whole, with no time fixed`
-9. **What the type means.** Bold: the word is in the original. Bold italics: Claude added the word, and nothing in the original stands behind it. Each added word gets its own line: `2. ***was***`. An added word can have options: `7. ***himself*** — *his cause* | *them*`
-   - **A linking word for a side action is an added word.** Greek and Hebrew often set a side action beside the main one with no linking word ("we being still sinners, Christ died"). English needs "while," "though," "because," or "when." The original shows that the two actions are tied. It does not say how, so the link is Claude's choice. Put it on its own bold italic line with the other links as options, `8. ***while*** — *though* | *because* | *when*`, and give the readings in a note (rule 15.1).
+9. **What the type means.** Bold: the word is in the original. Bold italics: Claude added the word, and nothing in the original stands behind it. Each added word gets its own line, with the word "(added)" right after it so it cannot be missed: `2. ***was*** (added)`. An added word can have options: `7. ***himself*** (added) — *his cause* | *them*`. The "(added)" mark appears only in the numbered list, never in the plain line.
+   - **A linking word for a side action is an added word.** Greek and Hebrew often set a side action beside the main one with no linking word ("we being still sinners, Christ died"). English needs "while," "though," "because," or "when." The original shows that the two actions are tied. It does not say how, so the link is Claude's choice. Put it on its own bold italic line with the other links as options, `8. ***while*** (added) — *though* | *because* | *when*`, and give the readings in a note (rule 15.1).
 10. **One original word spread over several lines.** Hebrew attaches "and," "from," and "our" to a word. Greek and Hebrew both show "of," "to," and "by" through a word's ending. Give each English piece its own line, and wrap the group in parentheses: the opening one before the first piece, the closing one right after the last piece's bold word.
 
     `3. (**because of** — LIKELY: because of | from; POSSIBLE: for | by`
@@ -200,6 +200,7 @@ The helper lists the words the Berean Bible leaves without English. Claude's tra
     - it cannot combine with the words around it to make a sentence.
 13. **Test before ruling out.** The helper prints how the Berean Bible renders each word everywhere. Before ruling a meaning out, look there, and search the word tables further if needed, for the meaning in a similar setting. If the data shows it, keep it as UNLIKELY.
     - **A meaning may go under RULED OUT only after that check has been run.** If the check was not run, put the meaning under UNLIKELY. Nothing is ever removed on an untested claim.
+    - The check is also met when the lexicon entry itself says the meaning needs a form this verse lacks (for example, "in the plural" when the word here is singular).
 14. Never rule a meaning out only because another fits the context better. Context sets the tier. It does not delete.
 15. When in doubt, keep the meaning.
 16. Do not include archaic or interpretive renderings from existing translations unless they fall within the word's actual range.
@@ -223,7 +224,7 @@ The helper lists the words the Berean Bible leaves without English. Claude's tra
    - pronouns the verb's ending supplies ("we wage war");
    - "of," "for," "to," and "by" that express a word's ending (rule 7.7);
    - English that a helper word adds (rule 6.20). That goes in pointy brackets, not italics.
-4. In the plain line an added word is italic. In the numbered list it has its own line in bold italics (rule 6.9).
+4. In the plain line an added word is italic. In the numbered list it has its own line in bold italics, followed by "(added)" (rule 6.9).
 5. The "all" in "you *all*" stays italic as the plural marker.
 6. When uncertain whether a word is added, say so. Do not guess.
 
@@ -370,13 +371,14 @@ Put a verse's notes right after its numbered word lines, under a bold header on 
    - "Option X is a subset of Option Y."
    - "Options X and Y can both be true."
    - "Options X, Y, and Z can be stages of one process."
+   - "Options X, Y, and Z can all be true."
 4. Do not write this note when the options leave the meaning the same. Nothing else goes in the note. Reasons belong to the detail level.
 
 ### 15B. One-line notes
 
 5. **Identity.** Who or what an unnamed phrase points to, including the unnamed doer of an action, when it matters and there is one candidate: "'The one judging justly' means God. (Strong.)"
 6. **Same word.** When one original word appears more than once in the passage, or two different original words share one English word: "'Sins' appears twice in this verse. Both are the same Greek word." Do not give the original word.
-7. **Verb contrast.** When the verb forms change between verses in a way that looks deliberate, follow this model: "Verse 23 — The verbs in this verse picture things that kept happening. The insults kept coming, and he kept holding back. Verses 22 and 24 picture each act as one whole. The change looks deliberate. (Likely.)"
+7. **Verb contrast.** When the verb forms change between verses, or between two verbs in one verse, in a way that looks deliberate, state what each form pictures and rate it. Do not add an inference about what the contrast means. Follow this model: "Verse 23 — The verbs in this verse picture things that kept happening. The insults kept coming, and he kept holding back. Verses 22 and 24 picture each act as one whole. The change looks deliberate. (Likely.)"
 8. **Stress.** When the original puts weight on a word: "The Greek puts weight on 'himself.' He, and no one else, carried the sins. (Likely.)"
 9. **Person shift.** When the speaker or the one addressed changes: "Peter shifts from 'our sins' and 'we live' to 'you *all* were healed.' He turns back to the servants he addresses."
 10. **Manuscripts.** One short line for a difference that changes the translation: "Manuscripts: some copies read 'for us' where this text reads 'for you.'"
@@ -502,6 +504,7 @@ Put a verse's notes right after its numbered word lines, under a bold header on 
 4. For each verse sent: the plain line, a blank line, the numbered word lines, then **Notes**, then **Quotes**
 5. **More information**
 6. The closing reminder
+7. The receipt line from the check (rule 25.6)
 
 **Long answers:** when an answer will run too long for one response, split it at a natural break. End each part with: "Part 1 of 3. Say 'go' for the next." Never drop required content to save space.
 
@@ -632,6 +635,8 @@ S. Berean note: "you are healed" quotes Isaiah 53:5 (1 verse)
 
 Type a number to see every use of that word. Type one or more letters, with spaces between them, for more information.
 
+Checked: 24 words on 20 lines.
+
 **What to notice in this example:** lines 5, 8, and 19 show a "the" that is in the Greek but not in the English. Lines 15–16 and 18–19 are each one Greek word in two pieces. Line 17 sits before the group it would otherwise split. Lines with nothing to add have no dash. There is no bullet, table, or web search anywhere.
 
 ### 24B. Tiers, a ruled-out meaning, and an "of" phrase with a lens move (2 Corinthians 10:5)
@@ -651,7 +656,7 @@ The grammar does not choose. Only one option can be true. † Moved first by the
 
 - `3. **bore** — carried up` drops options, tiers, and the verb tag.
 - `4. **our** —` has a dash with nothing after it.
-- `2. *was*` is an added word without bold.
+- `2. *was*` is an added word without bold and without "(added)."
 - `15. **they [would have] repented**` uses square brackets for a helper word.
 - `9. **the God**` puts a hidden "the" into the English.
 
@@ -680,7 +685,7 @@ crushed because of our iniquities;
 
 1. (**But**
 2. **he**)
-3. ***was***
+3. ***was*** (added)
 4. **pierced** — LIKELY: pierced | wounded; UNLIKELY: profaned — done to him; a state, with no time fixed
 5. (**because of** — from | for | by
 6. **our**
@@ -696,8 +701,8 @@ crushed because of our iniquities;
 - Shares a neighbor's line and adds no English (Matthew 2:13): `22. **until** — until whenever`
 - Stands as its own word (Matthew 3:11): `2. **indeed** — on the one hand | truly`
 - Cannot be shown (Acts 1:1): "Verse 1 — The Greek has a helper word after 'the' that signals a contrast is coming, like 'on the one hand.' English has no natural way to show it here."
-- An added word with options (1 Peter 2:23): `6. **kept handing over** — entrusting | committing — ongoing, in the past` then `7. ***himself*** — *his cause* | *them*`
-- An added linking word (Romans 5:8): `8. ***while*** — *though* | *because* | *when*` then `9. **we**` then `10. **were** — ongoing`
+- An added word with options (1 Peter 2:23): `6. **kept handing over** — entrusting | committing — ongoing, in the past` then `7. ***himself*** (added) — *his cause* | *them*`
+- An added linking word (Romans 5:8): `8. ***while*** (added) — *though* | *because* | *when*` then `9. **we**` then `10. **were** — ongoing`
 
 ### 24I. Idiom on a word line (Exodus 34:6)
 
@@ -818,16 +823,14 @@ Other replies to a number:
 
 ## 25. Check before sending a first answer
 
-A first answer can look finished and still hide faults. Never send one unchecked. Do both checks below on every first answer, silently, and fix everything they find. Do not tell Andrew the checks were run. Tell him only if a fault could not be fixed, in one line.
+A first answer can look finished and still hide faults. Never send one unchecked. The check has two halves, and the helper drives both. Run it on every first answer and fix everything it finds.
 
-### 25A. The program check (the helper tests the word lines)
-
-1. Write the drafted word lines to a file, one per line, exactly as they will be printed, with one addition: start each line with the ids of the original words it carries, in braces. The helper's word table gives the ids (w1, w2, and so on).
+1. **Write the draft.** Put the drafted word lines in a file, one per line, exactly as they will be printed, with one addition: start each line with the ids of the original words it carries, in braces. The helper's word table gives the ids (w1, w2, and so on).
 
    ```
    {w6} 3. **bore** — LIKELY: bore | carried up; POSSIBLE: offered up — seen as a whole, in the past
    {w2,w3} 5. [the] **sins** — failures | offenses
-   {} 2. ***was***
+   {} 2. ***was*** (added)
    {w10} HIDDEN: quote marker
    ```
 
@@ -835,21 +838,12 @@ A first answer can look finished and still hide faults. Never send one unchecked
    - An added word carries none: `{}`.
    - Each piece of a broken-up word carries that word's id.
    - A word left out by rule gets a HIDDEN line naming the rule: quote marker, object pointer, or helper word.
-2. Run `python3 lookup.py check "REFERENCE" draft.txt`.
-3. The helper tests that every original word is placed exactly once, that no line ends in a bare dash, that added words and original words carry the right type, that parentheses open and close, that every bold word is in its own tier, that STRONG and LIKELY do not share a line, and that every verb carries the tag its form requires.
-4. Fix every fault and run it again until it prints CHECK PASSED. Then print the lines without the braces and without the HIDDEN lines.
-
-### 25B. The audit (Claude tests what a program cannot)
-
-Go back over the draft against these rules and the helper's output, as if Andrew had typed "check." Fix every fault before sending.
-
-1. **Lexicon.** For every word that has options, the whole lexicon entry was read, and every distinct meaning in it is in a tier or under RULED OUT. A word with no lexicon entry has no options beyond the helper's meaning.
-2. **Memory.** No option, count, verse, or form came from memory.
-3. **Ruled out.** Nothing is under RULED OUT unless the check of rule 7.13 was run.
-4. **Sentence test.** Every option before RULED OUT can replace the bold word and still make a sentence.
-5. **Ratings.** Every rating passes its test (section 13). A rating that rests only on the lexicon's order becomes Possible.
-6. **Notes.** Every note that needs a rating has one. No note assumes one reading of another note. Every readings note lists every reading the form allows.
-7. **Layout.** The reference line, **Notes**, **Quotes**, and **More information** are in place and in order.
+2. **Run** `python3 lookup.py check "REFERENCE" draft.txt`.
+3. **First half: the program tests the lines.** It tests that every original word is placed exactly once, that no line ends in a bare dash, that added words and original words carry the right type and the "(added)" mark, that parentheses open and close, that every bold word is in its own tier, that STRONG and LIKELY do not share a line, and that every verb carries the tag its form requires. Fix every fault and run it again until it prints CHECK PASSED.
+4. **Second half: the audit.** When the lines pass, the helper prints each drafted line beside that word's lexicon entry and its Berean renderings, with five questions. Go through every line it prints. This is not optional and not a skim: a first answer once reached Andrew with seven words whose lexicon entries had not been read. Add every missing meaning, remove every option that came from memory, move every untested RULED OUT to UNLIKELY, and correct every rating that fails its test (section 13).
+5. **Audit the notes too.** Every note that needs a rating has one. No note assumes one reading of another note. Every readings note lists every reading the form allows.
+6. **Print the answer** without the braces and without the HIDDEN lines. Make the very last line of the answer the receipt the helper gives, for example: `Checked: 18 words on 17 lines.` Andrew uses that line to see that the check ran. Never print it unless the helper printed CHECK PASSED for this draft.
+7. If a fault could not be fixed, say so in one line above the receipt.
 
 ## 26. Working style
 

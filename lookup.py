@@ -649,6 +649,10 @@ def cmd_check(spec, path):
             continue
         added = bm.group(1) is not None
         word = (bm.group(1) or bm.group(2)).strip()
+        if added and "(added)" not in text:
+            faults.append("Line %d is an added word. Write '(added)' right after it." % num)
+        if not added and "(added)" in text:
+            faults.append("Line %d says (added) but the word is not in bold italics." % num)
         if added and ids:
             faults.append("Line %d is bold italic (added) but carries original word(s) %s." % (num, ", ".join("w%d" % i for i in ids)))
         if not added and not ids:
@@ -700,6 +704,46 @@ def cmd_check(spec, path):
             print("- " + f)
     else:
         print("CHECK PASSED: all %d original words are accounted for on %d lines." % (n, len(nums)))
+        print("\n== NOW AUDIT THE OPTIONS. This is the second half of the check. Do it before answering. ==")
+        print("For each line below, compare YOUR LINE with the LEXICON entry and the BEREAN renderings.")
+        print("1. Every distinct meaning in the lexicon entry must be in a tier or under RULED OUT. Add any that are missing.")
+        print("2. Every option you list must come from the lexicon entry or the Berean renderings. Remove any that came from memory.")
+        print("3. RULED OUT needs a tested reason: the data shows the meaning never occurs in a setting like this, or the lexicon itself")
+        print("   says the meaning needs a form this verse lacks. With no tested reason, move it to UNLIKELY.")
+        print("4. Every option before RULED OUT must be able to replace the bold word and still make a sentence.")
+        print("5. A rating that rests only on the order of the lexicon entry becomes POSSIBLE.")
+        is_nt = BOOKS.index(split_ref(refs[0])[0]) >= 39
+        numbers = []
+        for r in rows:
+            if len(r) > 5 and re.match(r"^[GH]\d", r[5]) and r[5] not in numbers:
+                numbers.append(r[5])
+        rend = renderings_for(numbers, is_nt)
+        by_line = {}
+        for line in draft:
+            m = re.match(r"^\{([w\d,\s]*)\}\s*(\d+\..*)$", line)
+            if m:
+                by_line[m.group(2)] = [int(x) for x in re.findall(r"w(\d+)", m.group(1))]
+        done = set()
+        for text, ids in by_line.items():
+            for i in ids:
+                number = rows[i - 1][5] if len(rows[i - 1]) > 5 else ""
+                if not re.match(r"^[GH]\d", number) or number in ("G3588",) or number in done:
+                    continue
+                done.add(number)
+                print("\nYOUR LINE: %s" % text)
+                g = group_renderings(rend.get(number, []))
+                print("BEREAN (%d uses): %s" % (len(rend.get(number, [])), " | ".join("%s %d" % (k, c) for k, c in g[:14])))
+                entries = lex_entries(number)
+                if not entries:
+                    print("LEXICON: no entry (often a name). Offer no options beyond the second table's meaning.")
+                seen_body = set()
+                for e in entries:
+                    body = slim(e[5] if len(e) > 5 else "")
+                    if body and body not in seen_body:
+                        seen_body.add(body)
+                        print("LEXICON: %s" % body[:LEX_CAP])
+        print("\nWhen the audit is done and the lines are fixed, print the answer. Make its last line exactly:")
+        print("Checked: %d words on %d lines." % (n, len(nums)))
 
 
 def cmd_lex(numbers, classical=False):
